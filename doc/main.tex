@@ -1,0 +1,89 @@
+\documentclass{article}
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[english]{babel}
+
+% Set page size and margins
+% Replace `letterpaper' with`a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\title{IOTS Web Client / Server}
+\author{Jonas Arnold, Simon Frei, Fabian Guggenbühl, Dario Troxler}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Die Temperatur- / Lichtsensorwerte werden vom MKR board ausgelesen und auf Dweet gepostet. Der Webserver bietet die Möglichkeit, eine LED auf dem Arduino ein-/auszuschalten, die Häufigkeit der Sensor Updates einzustellen und zeigt einen den Wert eines Analog Pins des Arduinos an. Mit einem HTTP 301 "Moved Permanently" redirect wird die URI immer gelöscht nach einem Request.
+\end{abstract}
+
+\section{Implementierung / Gelerntes}
+
+Die Implementierung des Programms verlief gut. Alle Anforderungen konnten erfüllt werden und erfolgreich getestet werden.
+\begin{itemize}
+\item Periodisch Sensordaten an \href{https://dweet.io/follow/IOTS2021}{Dweet.io} übermitteln
+\item Gleichzeitig laufender Webserver um die Periodizität zu ändern
+\end{itemize}
+
+Mit einfachen Präprozessoranweisungen wurde eine Unterscheidung zwischen Schul- und Heimnetzwerk eingebaut.
+
+Die Eingabe im Web UI für das Setzen der Periodizität wurde mit einer HTML-form umgesetzt (input type=number):
+\begin{lstlisting}[frame=single, language=html, breaklines=true]  % Start your code-block
+
+<form action="/get">Sensor update cycle periodicity (in ms): <input type="number" name="periodMs" min="2000" max="60000" value="10000"><input type="submit" value="Set">
+
+\end{lstlisting}
+Zwar kann damit Min/Max begrenzt werden, jedoch sollte im Arduino code trotzdem erneut der Wert geprüft werden. Im Webbrowser kann der Quellcode angepasst werden und somit kann auch das Min/Max angepasst werden. So kann also trotzdem ein falscher Wert an den Arduino übermittelt werden.
+
+Für die Erkennung und das Auslesen des Get requests (HTML form) wurden einige Strinmanipulationen verwendet:
+\begin{lstlisting}[frame=single, language=C, breaklines=true]  % Start your code-block
+
+String getRequestKey = "/get?periodMs=";
+int indexOfGetRequest = currentLine.indexOf(getRequestKey);
+// get request has been found in the uri
+if(indexOfGetRequest > 0) {   
+  // extract value from URI
+  long requestedPeriodicity = currentLine.substring(indexOfGetRequest + getRequestKey.length()).toInt();  
+  Serial.print("New periodicity requested: ");
+  Serial.println(requestedPeriodicity);
+  // check range of allowed values
+  if(requestedPeriodicity >= 2000 && requestedPeriodicity < 60000)  
+  {
+    postingInterval = requestedPeriodicity;
+    Serial.print("New periodicity set.");
+  }
+  getRequestRecognized = true;
+}
+
+\end{lstlisting}
+Arduino bietet mit dem Objekt-Typ \textit{String} eine gute Lösung um Stringmanipulationen vorzunehmen. Mit den wenigen verfügbaren Funktionen können einige Manipulationen einfacher als mit ANSI C vorgenommen werden.
+
+Mit dem implementierten HTML-form wird der Get request einfach hinten an die URI angefügt (z.B. \textit{/get?PeriodMs=5000}). Das ist einfach auszulesen im Arduino code, jedoch ist die URI im Browser dann immer mit solchen zusätzlichen Argumenten und Parametern "verschmutzt". Deshalb wurde folgendes implementiert, um den Client nach einen Request automatisch auf die Hauptseite zu "forwarden" (mittels \href{https://en.wikipedia.org/wiki/URL_redirection}{HTTP 301 Moved Permanently redirect}):
+\begin{lstlisting}[frame=single, language=C, breaklines=true]  % Start your code-block
+
+// reload client page when a get request was recognized => clear URI
+if(getRequestRecognized)
+{
+    client.println("HTTP/1.1 301 Moved Permanently");
+    client.println("Location: /");
+    client.println("Content-type:text/html");
+    client.println();
+}
+
+\end{lstlisting}
+
+
+
+\section{Effizienz steigern}
+
+
+
+
+\end{document}
