@@ -94,7 +94,7 @@ void setup() {
    =========================================================
 */
 unsigned long lastConnectionTime = 0; // last time you connected to the server, in milliseconds
-const unsigned long postingInterval = 10L * 1000L; // delay between requests, in milliseconds
+unsigned long postingInterval = 10L * 1000L; // delay between requests, in milliseconds
 
 void loop() {
   // Web server
@@ -206,6 +206,9 @@ void printServerPage(WiFiClient client) {
             //create the links
             client.print("Click <a href=\"/H\">here</a> turn the LED on<br>");
             client.print("Click <a href=\"/L\">here</a> turn the LED off<br>");
+            client.print("<br><br><form action=\"/get\">Sensor update cycle periodicity (in ms): <input type=\"number\" name=\"periodMs\" min=\"2000\" max=\"60000\" value=\"");
+            client.print(postingInterval);
+            client.print("\"><input type=\"submit\" value=\"Set\"></form><br>");
 
             int randomReading = analogRead(A1);
             client.print("Random reading from analog pin: ");
@@ -223,12 +226,24 @@ void printServerPage(WiFiClient client) {
         else if (c != '\r') {    // if you got anything else but a carriage return character,
           currentLine += c;      // add it to the end of the currentLine
         }
-
+        
         if (currentLine.endsWith("GET /H")) {
           digitalWrite(LED_BUILTIN, HIGH);
         }
         if (currentLine.endsWith("GET /L")) {
           digitalWrite(LED_BUILTIN, LOW);
+        }
+        String getRequestKey = "/get?periodMs=";
+        int indexOfGetRequest = currentLine.indexOf(getRequestKey);
+        if(indexOfGetRequest > 0) {   // get request has been found in the uri
+          long requestedPeriodicity = currentLine.substring(indexOfGetRequest + getRequestKey.length()).toInt();  // + for amount of letters for getRequestKey
+          Serial.print("New periodicity requested: ");
+          Serial.println(requestedPeriodicity);
+          if(requestedPeriodicity >= 2000 && requestedPeriodicity < 60000)  // range of allowed values
+          {
+            postingInterval = requestedPeriodicity;
+            Serial.print("New periodicity set.");
+          }
         }
       } // end if (client.available())
     } // end while (client.connected())
