@@ -1,0 +1,7 @@
+#define SECRET_SSID_SCHOOL "EEE"
+#define SECRET_USER_SCHOOL ""
+#define SECRET_PASS_SCHOOL ""
+
+#define SECRET_SSID_HOME ""
+#define SECRET_PASS_HOME ""
+
