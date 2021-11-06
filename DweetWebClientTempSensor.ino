@@ -37,14 +37,17 @@ void enable_WiFi();
 void connect_WiFi();
 void printWifiStatus();
 void httpRequest();
+void printServerPage();
 
 /* =========================================================
    ================= SETUP =============================
    =========================================================
 */
 // WIFI setup
-WiFiClient client;
-int status = WL_IDLE_STATUS;     // the WiFi radio's status
+WiFiClient client;          // client
+WiFiServer server(80);      // server socket
+WiFiClient clientWebServer = server.available(); // client for webserver
+int status = WL_IDLE_STATUS;  // the WiFi radio's status
 #ifdef WIFI_SCHOOL
 char ssid[] = SECRET_SSID_SCHOOL; 
 char user[] = SECRET_USER_SCHOOL;  
@@ -58,6 +61,10 @@ char pass[] = SECRET_PASS_HOME;
 void setup() {
   //Initialize serial and wait for port to open:
   Serial.begin(9600);
+
+  // initialize digital pin LED_BUILTIN as an output.
+  pinMode(LED_BUILTIN, OUTPUT);
+
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }
@@ -75,6 +82,11 @@ void setup() {
   connect_WiFi();
   Serial.println("Connected to WiFi");
   printWifiStatus();
+
+  // start webserver
+  server.begin();
+  Serial.println("Started Webserver");
+
 }
 
 /* =========================================================
@@ -85,6 +97,13 @@ unsigned long lastConnectionTime = 0; // last time you connected to the server, 
 const unsigned long postingInterval = 10L * 1000L; // delay between requests, in milliseconds
 
 void loop() {
+  // Web server
+  clientWebServer = server.available();  //check if the server is available
+  if (clientWebServer) {  
+    Serial.println("server available");
+    printServerPage(clientWebServer);
+  }  
+  
   // if there's incoming data from a webserver connection,
   // send it out the serial port for debugging purposes:
   while (client.available()) {
@@ -108,8 +127,8 @@ void loop() {
   ========================================================= */
 // if you don't want to use DNS (and reduce your sketch size)
 // use the numeric IP instead of the name for the server:
-//IPAddress server(74,125,232,128);  // numeric IP for Google (no DNS)
-char server[] = "dweet.io";    // name address for Google (using DNS)
+//IPAddress host(74,125,232,128);  // numeric IP for Google (no DNS)
+char host[] = "dweet.io";    // name address for Google (using DNS)
 
 char *req[] = {
   "POST /dweet/for/IOTS2021?tmp=23 HTTP / 1.1",
@@ -125,7 +144,7 @@ void httpRequest() {
   client.stop();
 
   // if there's a successful connection:
-  if (client.connect(server, 80)) {
+  if (client.connect(host, 80)) {
     Serial.println("connecting to Dweet.io");
 
     Serial.println("sensors read.");
@@ -157,6 +176,68 @@ void httpRequest() {
   }
 
 } // end httpRequest()
+
+/* =========================================================
+   printServerPage()
+
+   ========================================================= */
+
+void printServerPage(WiFiClient client) {
+
+  if (client) {                             // if you get a client,
+    Serial.println("new client");           // print a message out the serial port
+    String currentLine = "";                // make a String to hold incoming data from the client
+    while (client.connected()) {            // loop while the client's connected
+      if (client.available()) {             // if there's bytes to read from the client,
+        char c = client.read();             // read a byte, then
+        Serial.write(c);                    // print it out the serial monitor
+        if (c == '\n') {                    // if the byte is a newline character
+
+          // if the current line is blank, you got two newline characters in a row.
+          // that's the end of the client HTTP request, so send a response:
+          if (currentLine.length() == 0) {
+
+            // HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
+            // and a content-type so the client knows what's coming, then a blank line:
+            client.println("HTTP/1.1 200 OK");
+            client.println("Content-type:text/html");
+            client.println();
+
+            //create the links
+            client.print("Click <a href=\"/H\">here</a> turn the LED on<br>");
+            client.print("Click <a href=\"/L\">here</a> turn the LED off<br>");
+
+            int randomReading = analogRead(A1);
+            client.print("Random reading from analog pin: ");
+            client.print(randomReading);
+
+            // The HTTP response ends with another blank line:
+            client.println();
+            // break out of the while loop:
+            break;
+          }
+          else {      // if you got a newline, then clear currentLine:
+            currentLine = "";
+          }
+        } // end if (c == '\n')
+        else if (c != '\r') {    // if you got anything else but a carriage return character,
+          currentLine += c;      // add it to the end of the currentLine
+        }
+
+        if (currentLine.endsWith("GET /H")) {
+          digitalWrite(LED_BUILTIN, HIGH);
+        }
+        if (currentLine.endsWith("GET /L")) {
+          digitalWrite(LED_BUILTIN, LOW);
+        }
+      } // end if (client.available())
+    } // end while (client.connected())
+
+    // close the connection:
+    client.stop();
+    Serial.println("client disconnected");
+  } // end if (client)
+} // end printWEB()
 
 /* =========================================================
   enable_WiFi()
