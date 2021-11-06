@@ -238,11 +238,14 @@ void printServerPage(WiFiClient client) {
         }
         String getRequestKey = "/get?periodMs=";
         int indexOfGetRequest = currentLine.indexOf(getRequestKey);
-        if(indexOfGetRequest > 0) {   // get request has been found in the uri
-          long requestedPeriodicity = currentLine.substring(indexOfGetRequest + getRequestKey.length()).toInt();  // + for amount of letters for getRequestKey
+        // get request has been found in the uri
+        if(indexOfGetRequest > 0) {   
+          // extract value from URI
+          long requestedPeriodicity = currentLine.substring(indexOfGetRequest + getRequestKey.length()).toInt();  
           Serial.print("New periodicity requested: ");
           Serial.println(requestedPeriodicity);
-          if(requestedPeriodicity >= 2000 && requestedPeriodicity < 60000)  // range of allowed values
+          // check range of allowed values
+          if(requestedPeriodicity >= 2000 && requestedPeriodicity < 60000)  
           {
             postingInterval = requestedPeriodicity;
             Serial.print("New periodicity set.");
