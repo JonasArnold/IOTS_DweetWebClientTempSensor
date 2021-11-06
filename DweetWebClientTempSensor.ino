@@ -226,12 +226,15 @@ void printServerPage(WiFiClient client) {
         else if (c != '\r') {    // if you got anything else but a carriage return character,
           currentLine += c;      // add it to the end of the currentLine
         }
-        
+
+        bool getRequestRecognized = false;
         if (currentLine.endsWith("GET /H")) {
           digitalWrite(LED_BUILTIN, HIGH);
+          getRequestRecognized = true;
         }
         if (currentLine.endsWith("GET /L")) {
           digitalWrite(LED_BUILTIN, LOW);
+          getRequestRecognized = true;
         }
         String getRequestKey = "/get?periodMs=";
         int indexOfGetRequest = currentLine.indexOf(getRequestKey);
@@ -244,6 +247,16 @@ void printServerPage(WiFiClient client) {
             postingInterval = requestedPeriodicity;
             Serial.print("New periodicity set.");
           }
+          getRequestRecognized = true;
+        }
+
+        // reload client page when a get request was recognized => clear URI
+        if(getRequestRecognized)
+        {
+            client.println("HTTP/1.1 301 Moved Permanently");
+            client.println("Location: /");
+            client.println("Content-type:text/html");
+            client.println();
         }
       } // end if (client.available())
     } // end while (client.connected())
