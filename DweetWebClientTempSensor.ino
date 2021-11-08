@@ -8,16 +8,18 @@
   File->Examples->WiFiNINA->WifiWebClientRepeating
   see: https://www.arduino.cc/en/Tutorial/LibraryExamples/WiFiWebClientRepeating
 
-  WiFiNINA reference
-  https://www.arduino.cc/en/Reference/WiFiNINA
+  Required Libraries: 
+  WiFiNINA: https://www.arduino.cc/en/Reference/WiFiNINA
+  Arduino_MKRENV: https://github.com/arduino-libraries/Arduino_MKRENV
   
-  Reads the light sensor from the MKR ENV shield and sends it to
-  http://dweet.io/dweet/for/IOTS2020
+  Reads the light and temperature sensor from the MKR ENV shield and sends it to
+  http://dweet.io/dweet/for/IOTS2021
+  Read out values online: https://dweet.io/follow/IOTS2021
 
   to do the same in cURL:
-  curl -vX POST "https://dweet.io/dweet/for/IOTS2020?lux=81"
+  curl -vX POST "https://dweet.io/dweet/for/IOTS2021?lux=81"
   to post 2 values in cURL:
-  curl -vX POST "https://dweet.io/dweet/for/IOTS2020?tmp=20&lux=81"
+  curl -vX POST "https://dweet.io/dweet/for/IOTS2021?tmp=20&lux=81"
 */
 
 /* =========================================================
@@ -26,8 +28,8 @@
 */
 // Please choose wether the WiFi credentials from school or home shall be taken 
 // by uncommenting the inapplicable option
-//#define WIFI_SCHOOL
-#define WIFI_HOME
+#define WIFI_SCHOOL
+//#define WIFI_HOME
 
 /* =========================================================
    ================= FUNCTION DEFINITION ===================
