@@ -24,7 +24,9 @@
 Die Temperatur- / Lichtsensorwerte werden vom MKR board ausgelesen und auf Dweet gepostet. Der Webserver bietet die Möglichkeit, eine LED auf dem Arduino ein-/auszuschalten, die Häufigkeit der Sensor Updates einzustellen und zeigt einen den Wert eines Analog Pins des Arduinos an. Mit einem HTTP 301 "Moved Permanently" redirect wird die URI immer gelöscht nach einem Request.
 \end{abstract}
 
-\section{Implementierung / Gelerntes}
+\section{Implementierung Web Client / Web Server Arduino}
+
+\subsection{Impelemtierung / Gelerntes}
 
 Die Implementierung des Programms verlief gut. Alle Anforderungen konnten erfüllt werden und erfolgreich getestet werden.
 \begin{itemize}
@@ -81,9 +83,18 @@ if(getRequestRecognized)
 
 
 
-\section{Effizienz steigern}
+\subsection{Effizienz steigern}
+
+Die Energieeffizienz des Arduinos könnte noch gesteigert werden, indem der Sleep Modus oder Deepsleep Modus des Arduinos konfiguiert würde. Dann würde der Arduino regelmässig aufwachen, sich mit dem WiFi verbinden und die Daten übermitteln.
+Höchstwahrscheinlich würde jedoch das periodische Verbinden mit dem WiFi mehr Energie verbrauchen, als einfach den Arduino dauerhaft verbunden zu lassen.
+
+Ansonsten könnte man eine effizientere Übertragungstechnik (z.B. Zigbee) verwendet werden. Dann müsste die Verbindung nicht dauerhaft bestehen.
 
 
+\section{Anbindung MQTT}
+
+\subsection{Arduino}
+Bei der Implementierung traten Probleme, als wir das erste Mal die \href{https://github.com/arduino-libraries/ArduinoMqttClient}{MqttClient Library} benutzen wollten. Beim Verbinden zum Broker kam die Fehlermeldung "Unrecognized Protocol Version" (Fehlercode 1).
 
 
 \end{document}
