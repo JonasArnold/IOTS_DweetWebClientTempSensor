@@ -15,15 +15,18 @@ namespace ConsoleMqttSubscriber
     {
       // creating an MqttClient object
       var client = new uPLibrary.Networking.M2Mqtt.MqttClient(ipMqttClient);
-      Console.WriteLine($"Connected to MQTT broker at: {ipMqttClient}");
-      Console.WriteLine("Hello MQTT World! Now listening to messages. " +
-        "\nPress Spacebar to toggle LED on/off." +
-        "\nPress Enter to configure a new cycle time (ms).");
+      Console.WriteLine("Connecting to Mqtt broker....");
       // register to message received
       client.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
       // generate a clientID and connect to Broker
       string clientId = Guid.NewGuid().ToString();
       client.Connect(clientId);
+
+      Console.WriteLine($"Connected to MQTT broker at: {ipMqttClient}");
+      Console.WriteLine("Hello MQTT World! Now listening to messages. " +
+        "\nPress Spacebar to toggle LED on/off." +
+        "\nPress Enter to configure a new cycle time (ms).");
+
       // subscribe to a topic
       client.Subscribe(new string[] { "sensor1/light" }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
       client.Subscribe(new string[] { "sensor1/temperature" }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
