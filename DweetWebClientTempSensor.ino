@@ -17,9 +17,9 @@
   Read out values online: https://dweet.io/follow/IOTS2021
 
   to do the same in cURL:
-  curl -vX POST "https://dweet.io/dweet/for/IOTS2021?lux=81"
+  curl -vX GET "https://dweet.io/dweet/for/IOTS2021?lux=81"
   to post 2 values in cURL:
-  curl -vX POST "https://dweet.io/dweet/for/IOTS2021?tmp=20&lux=81"
+  curl -vX GET "https://dweet.io/dweet/for/IOTS2021?tmp=20&lux=81"
 */
 
 /* =========================================================
@@ -159,8 +159,8 @@ void httpRequest() {
     char buffTemp[20];
     itoa(tmp, buffTemp, 10);
 
-    // EXAMPLE "POST /dweet/for/IOTS2020?lux=99&tmp=23 HTTP/1.1"
-    client.print("POST /dweet/for/IOTS2021?lux=");
+    // EXAMPLE "GET /dweet/for/IOTS2020?lux=99&tmp=23 HTTP/1.1"
+    client.print("GET /dweet/for/IOTS2021?lux=");
     client.print(buffLight);
     client.print("&tmp=");
     client.print(buffTemp);
@@ -231,10 +231,12 @@ void printServerPage(WiFiClient client) {
 
         bool getRequestRecognized = false;
         if (currentLine.endsWith("GET /H")) {
+          Serial.println("LED Command recognized: Set LED to HIGH");
           digitalWrite(LED_BUILTIN, HIGH);
           getRequestRecognized = true;
         }
         if (currentLine.endsWith("GET /L")) {
+          Serial.println("LED Command recognized: Set LED to LOW");
           digitalWrite(LED_BUILTIN, LOW);
           getRequestRecognized = true;
         }
