@@ -16,7 +16,9 @@ namespace ConsoleMqttSubscriber
       // creating an MqttClient object
       var client = new uPLibrary.Networking.M2Mqtt.MqttClient(ipMqttClient);
       Console.WriteLine($"Connected to MQTT broker at: {ipMqttClient}");
-      Console.WriteLine("Hello MQTT World! Now listening to messages. \nPress Spacebar to toggle LED on/off.");
+      Console.WriteLine("Hello MQTT World! Now listening to messages. " +
+        "\nPress Spacebar to toggle LED on/off." +
+        "\nPress Enter to configure a new cycle time (ms).");
       // register to message received
       client.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
       // generate a clientID and connect to Broker
@@ -41,11 +43,26 @@ namespace ConsoleMqttSubscriber
               stateMessage = "OFF";
             }
 
-            string ledToggleTopic = "sensor/ledState";
-
+            string ledToggleTopic = "sensor1/ledState";
             Console.WriteLine($"Sending \"{stateMessage}\" to topic '{ledToggleTopic}'");
             client.Publish(ledToggleTopic, Encoding.ASCII.GetBytes(stateMessage));
             ledOnState = !ledOnState;  // toggle
+          }
+          else if (key.Key == ConsoleKey.Enter)
+          {
+            Console.Write("Please provide cycle time in [ms]: ");
+            var readLine = Console.ReadLine();
+            int cycleTime = Convert.ToInt32(readLine);
+            if(cycleTime < 60000 && cycleTime > 2000)
+            {
+              string cycleTimeTopic = "sensor1/cylceTime";
+              Console.WriteLine($"Sending \"{cycleTime}\" to topic '{cycleTimeTopic}'");
+              client.Publish(cycleTimeTopic, Encoding.ASCII.GetBytes(cycleTime.ToString()));
+            }
+            else
+            {
+              Console.WriteLine("Cycle time invalid. Was not sent!");
+            }
           }
         }
       }
