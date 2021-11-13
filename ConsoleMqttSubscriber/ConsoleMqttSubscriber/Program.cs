@@ -58,7 +58,7 @@ namespace ConsoleMqttSubscriber
             int cycleTime = Convert.ToInt32(readLine);
             if(cycleTime < 60000 && cycleTime > 2000)
             {
-              string cycleTimeTopic = "sensor1/cylceTime";
+              string cycleTimeTopic = "sensor1/cycleTime";
               Console.WriteLine($"Sending \"{cycleTime}\" to topic '{cycleTimeTopic}'");
               client.Publish(cycleTimeTopic, Encoding.ASCII.GetBytes(cycleTime.ToString()));
             }
