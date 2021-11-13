@@ -81,8 +81,6 @@ void loop() {
     int idx = 0;
     mqttClient.read(message, messageSize); 
     String messageStr = (char*)message;  
-    
-    // Serial.println(topicRecieved);
     if(topicRecieved.equals(topicSubscribe1)){
       if(messageStr.startsWith("ON")){
         digitalWrite(LED_BUILTIN, HIGH);

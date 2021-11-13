@@ -1,0 +1,75 @@
+\documentclass{article}
+\usepackage{xcolor}
+\usepackage{listings}
+
+\definecolor{mGreen}{rgb}{0,0.6,0}
+\definecolor{mGray}{rgb}{0.5,0.5,0.5}
+\definecolor{mPurple}{rgb}{0.58,0,0.82}
+\definecolor{backgroundColour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{CStyle}{
+    backgroundcolor=\color{backgroundColour},   
+    commentstyle=\color{mGreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{mGray},
+    stringstyle=\color{mPurple},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    language=C
+}
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[german]{babel}
+
+% Set page size and margins
+% Replace `letterpaper' with`a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\title{IOTS MQTT Publisher Subscriber}
+\author{Simon Frei, Jonas Arnold}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Mit einer C\#- Applikation wurde ein Subscriber und Publisher realisiert. Er gibt die empfangenen Werte auf der Konsole aus und publiziert Befehle, welcher der Arduino empfangen soll.
+Der Arduino WiFI 1010 abonniert die Befehle und sendet die Licht- Werte.
+\end{abstract}
+
+\section{Implementierung MQTT Subscriber / Publisher Arduino}
+\subsection{Implementierung}
+Die C\#- Applikation konnte sehr schnell und erfolgreich implementiert werden. Bei der Arduino Anwendung ging es etwas holpriger vonstatten. So gab es einerseits immer wieder Probleme mit der Handhabung der Arduino IDE, oder die IDE wollte den Arduino nicht mehr erkennen, konnte so das Programm nicht laden oder der SerialMonitor konnte nicht gestartet wreden. Andererseits konnte
+der Arduino sich nicht auf \url{test.mosquitto.org} verbinden. Nach einigen Versuchen musste festgestellt werden, dass es mit dem Laptop und dem Smartphone auch nicht ging. So musste ein eigener Broker aufgesetzt werden.\newline
+Nachdem diese Hürde gemeistert wurde konnte der Subscriber und der Publisher implementiert wurde, dabei konnte man sich gut an den Example- Codes von  \href{https://github.com/arduino-libraries/ArduinoMqttClient}{ArduinoMqttClient} orientieren.\newline
+Das String- Objekt kam uns bei dieser Anwendung sehr zu gute, da damit einige Manipulationen sehr einfach umgesetzt werden konnten.
+\begin{lstlisting}[style=CStyle, caption=String Manipulationen]
+    uint8_t message[messageSize];
+    int idx = 0;
+    mqttClient.read(message, messageSize); 
+    String messageStr = (char*)message;  
+    if(topicRecieved.equals(topicSubscribe1)){
+      if(messageStr.startsWith("ON")){
+        digitalWrite(LED_BUILTIN, HIGH);
+      }else{
+        digitalWrite(LED_BUILTIN, LOW);        
+      }
+    }else if(topicRecieved.equals(topicSubscribe2)){  
+      cycleTime = (unsigned long)messageStr.toInt(); 
+    }
+\end{lstlisting}
+
+\end{document}
