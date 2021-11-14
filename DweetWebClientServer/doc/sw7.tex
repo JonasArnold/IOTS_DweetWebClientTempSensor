@@ -1,4 +1,35 @@
 \documentclass{article}
+% Useful packages
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\definecolor{mGreen}{rgb}{0,0.6,0}
+\definecolor{mGray}{rgb}{0.5,0.5,0.5}
+\definecolor{mPurple}{rgb}{0.58,0,0.82}
+\definecolor{backgroundColour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{CStyle}{
+    backgroundcolor=\color{backgroundColour},   
+    commentstyle=\color{mGreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{mGray},
+    stringstyle=\color{mPurple},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    language=C
+}
 
 % Language setting
 % Replace `english' with e.g. `spanish' to change the document language
@@ -8,11 +39,7 @@
 % Replace `letterpaper' with`a4paper' for UK/EU standard size
 \usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
 
-% Useful packages
-\usepackage{amsmath}
-\usepackage{graphicx}
-\usepackage{listings}
-\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
 
 \title{IOTS Web Client / Server}
 \author{Jonas Arnold, Simon Frei, Fabian Guggenbühl, Dario Troxler}
@@ -36,16 +63,18 @@ Die Implementierung des Programms verlief gut. Alle Anforderungen konnten erfül
 
 Mit einfachen Präprozessoranweisungen wurde eine Unterscheidung zwischen Schul- und Heimnetzwerk eingebaut.
 
-Die Eingabe im Web UI für das Setzen der Periodizität wurde mit einer HTML-form umgesetzt (input type=number):
-\begin{lstlisting}[frame=single, language=html, breaklines=true]  % Start your code-block
+Die Eingabe im Web UI für das Setzen der Periodizität wurde mit einer HTML-form umgesetzt (input type = number):
+\begin{lstlisting}[style=CStyle, language=html, caption=Vom Arduino generierter HTML code]  % Start your code-block
 
-<form action="/get">Sensor update cycle periodicity (in ms): <input type="number" name="periodMs" min="2000" max="60000" value="10000"><input type="submit" value="Set">
+<form action="/get">
+Sensor update cycle periodicity (in ms): <input type="number" name="periodMs" min="2000" max="60000" value="10000">
+<input type="submit" value="Set">
 
 \end{lstlisting}
 Zwar kann damit Min/Max begrenzt werden, jedoch sollte im Arduino code trotzdem erneut der Wert geprüft werden. Im Webbrowser kann der Quellcode angepasst werden und somit kann auch das Min/Max angepasst werden. So kann also trotzdem ein falscher Wert an den Arduino übermittelt werden.
 
 Für die Erkennung und das Auslesen des Get requests (HTML form) wurden einige Strinmanipulationen verwendet:
-\begin{lstlisting}[frame=single, language=C, breaklines=true]  % Start your code-block
+\begin{lstlisting}[style=CStyle, language=C, caption=String Manipulationen]  % Start your code-block
 
 String getRequestKey = "/get?periodMs=";
 int indexOfGetRequest = currentLine.indexOf(getRequestKey);
@@ -68,7 +97,7 @@ if(indexOfGetRequest > 0) {
 Arduino bietet mit dem Objekt-Typ \textit{String} eine gute Lösung um Stringmanipulationen vorzunehmen. Mit den wenigen verfügbaren Funktionen können einige Manipulationen einfacher als mit ANSI C vorgenommen werden.
 
 Mit dem implementierten HTML-form wird der Get request einfach hinten an die URI angefügt (z.B. \textit{/get?PeriodMs=5000}). Das ist einfach auszulesen im Arduino code, jedoch ist die URI im Browser dann immer mit solchen zusätzlichen Argumenten und Parametern "verschmutzt". Deshalb wurde folgendes implementiert, um den Client nach einen Request automatisch auf die Hauptseite zu "forwarden" (mittels \href{https://en.wikipedia.org/wiki/URL_redirection}{HTTP 301 Moved Permanently redirect}):
-\begin{lstlisting}[frame=single, language=C, breaklines=true]  % Start your code-block
+\begin{lstlisting}[style=CStyle, language=C, caption=Automatischer Redirect]  % Start your code-block
 
 // reload client page when a get request was recognized => clear URI
 if(getRequestRecognized)
@@ -89,12 +118,6 @@ Die Energieeffizienz des Arduinos könnte noch gesteigert werden, indem der Slee
 Höchstwahrscheinlich würde jedoch das periodische Verbinden mit dem WiFi mehr Energie verbrauchen, als einfach den Arduino dauerhaft verbunden zu lassen.
 
 Ansonsten könnte man eine effizientere Übertragungstechnik (z.B. Zigbee) verwendet werden. Dann müsste die Verbindung nicht dauerhaft bestehen.
-
-
-\section{Anbindung MQTT}
-
-\subsection{Arduino}
-Bei der Implementierung traten Probleme, als wir das erste Mal die \href{https://github.com/arduino-libraries/ArduinoMqttClient}{MqttClient Library} benutzen wollten. Beim Verbinden zum Broker kam die Fehlermeldung "Unrecognized Protocol Version" (Fehlercode 1).
 
 
 \end{document}
