@@ -53,18 +53,33 @@ Auf dem Arduino MKR 1010 WiFi soll ein BLE Central und ein BLE Peripheral implem
 
 \section{Implementierung BLE Central / Peripheral}
 
-\subsection{Impelemtierung / Gelerntes}
+\subsection{Impelemtierung BLE Peripheral }
 
-TEXT
+Die Implementierung des Peripherals lief problemlos ab. Die Spezifikationen des vordefinierten BLE Services \textbf{Environmental Sensing}. haben wir auf der \href{https://www.bluetooth.com/specifications/specs/}{Spezifikationenseite von Bluetooth} gefunden. Die vordefinierten UUIDs für den Service und die Characteristics waren ebenfalls bei \href{ bluetooth.com/specifications/assigned-numbers }{bluetooth.com} zu finden. 
 
-\begin{lstlisting}[style=CStyle, language=C, caption=Moin meister]  % Start your code-block
+Damit das ENV Board nicht zu oft abgefragt wird, wird die funktion \textbf{millis()} von Arduino verwendet und nur alle 1000 ms neue Sensordaten geschickt. Die LED kann auch schneller geschaltet werden (diese Characteristic wird im Loop ausserhalb dieser IF Abfrage bedient):
+\begin{lstlisting}[style=CStyle, language=C, caption=Limitierung der Sensordatenabfragen]  % Start your code-block
 
-if(true)
+// update sensors every SENSOR_UPDATE_TIME_MS to not stress the ENV board
+if((last_update - millis()) > SENSOR_UPDATE_TIME_MS)
 {
-   // CODE
+int16_t temperature = ENV.readTemperature();
+int16_t humidity    = ENV.readHumidity();
+int16_t illuminance = ENV.readIlluminance();
+
+temperatureCharacteristic.writeValue(temperature);
+humidityCharacteristic.writeValue(humidity);
+illuminanceCharacteristic.writeValue(illuminance);
+
+last_update = millis();  // update time
 }
 
 \end{lstlisting}
+
+Bezüglich der Datentypen haben wir folgendes gelernt: Der Datentyp ist nicht an eine vordefinierte Characteristic verknüpft wie das in anderen Standards der Fall ist. Die Sensordaten würden bestenfalls als \textit{float} übermittelt (Datentyp der Characteristic \textit{BLEFloatCharacteristic}). Leider kann das die verwendete App \textbf{LightBlue} nicht richtig anzeigen (nur den HEX Wert davon). Deshalb haben wir schlussendlich die Werte als Integer übermittelt (Datentyp der Characteristic \textit{BLEIntCharacteristic}).
+Dies kann die App richtig anzeigen, vorausgesetzt das Datenformat wird auf \textbf{Unsigned Little-Endian} eingestellt (Übermittlungsreihenfolge der einzelnen Bytes).
+
+\subsection{Impelemtierung BLE Central  }
 
 
 \end{document}
