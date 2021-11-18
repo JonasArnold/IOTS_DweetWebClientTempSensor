@@ -43,7 +43,6 @@ unsigned long last_update;  // system tick when last sensor update was sent via 
 
 void setup() {
   Serial.begin(9600);
-  while (!Serial);
 
   // set LED pin to output mode
   pinMode(ledPin, OUTPUT);
