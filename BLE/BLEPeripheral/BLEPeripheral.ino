@@ -99,7 +99,7 @@ void loop() {
       
       // ENVIRONMENTAL SENSING SERVICE
       // update sensors every SENSOR_UPDATE_TIME_MS to not stress the ENV board
-      if((last_update - millis()) > SENSOR_UPDATE_TIME_MS)
+      if((millis() - last_update) > SENSOR_UPDATE_TIME_MS)
       {
         int16_t temperature = ENV.readTemperature();
         int16_t humidity    = ENV.readHumidity();
