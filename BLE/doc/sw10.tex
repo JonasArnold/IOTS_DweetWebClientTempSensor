@@ -80,6 +80,63 @@ Bezüglich der Datentypen haben wir folgendes gelernt: Der Datentyp ist nicht an
 Dies kann die App richtig anzeigen, vorausgesetzt das Datenformat wird auf \textbf{Unsigned Little-Endian} eingestellt (Übermittlungsreihenfolge der einzelnen Bytes).
 
 \subsection{Impelemtierung BLE Central  }
+Die Implementierung für den Central gab es zuerst einige Probleme. Mit den Apps die verwendet wurden um ein Peripheral zu "simulieren" kamen wir nicht ganz klar. Deshalb liessen wir das Peripheral auf dem einen Arduino Wifi 1010 laufen und testeten auf dem zweiten Arudino Wifi 1010 den Central. \newline
+Der Central is so aufgebaut, dass er Periphal Geräte sucht und wenn der local Name mit unserem Peripheral übereinstimmt untersucht er die Attribute. Dazu "abonniert" er die gewünschten Charakteristiken:
+\begin{lstlisting}[style=CStyle, language=C, caption=Abonnieren der Charakteristiken (Temp)]
+if(!temperatureCharacteristic){
+  Serial.println('no temperatureCharacteristic');
+  peripheral.disconnect();
+  return;
+}else if(!temperatureCharacteristic.canSubscribe()){
+  Serial.println('cant subscribe temperatureCharacteristic');
+  peripheral.disconnect();
+  return;            
+}else if(!temperatureCharacteristic.subscribe()){
+  Serial.println("subscription of temperatureCharacteristic failed!");
+  peripheral.disconnect();
+  return;
+}else{
+  Serial.println('subscribe temperatureCharacteristic success');
+}
+\end{lstlisting}
+Solange das Gerät verbunden ist, werden die Werte über die Serielle Schnitstelle an den Computer gesendet, wenn ein neuer Wert gesendet wird. Wenn der Helligkeitswert 100 übersteigt, dann schaltet er die LED auf dem Peripheral Device an.
+\begin{lstlisting}[style=CStyle, language=C, caption=Abonnieren der Charakteristiken (Temp)]
+int16_t illVal, humVal, tempVal;
+    while(peripheral.connected()){
+      if(illuminanceCharacteristic.valueUpdated()){
+        illuminanceCharacteristic.readValue(illVal);
+        Serial.print("illuminance: ");
+        Serial.println(illVal);    
+      }
+      if(humidityCharacteristic.valueUpdated()){
+        humidityCharacteristic.readValue(humVal);
+        Serial.print("humidity: ");
+        Serial.println(humVal);    
+      }
+      if(temperatureCharacteristic.valueUpdated()){
+        temperatureCharacteristic.readValue(tempVal);
+        Serial.print("temp: ");
+        Serial.println(tempVal);    
+      }    
 
+      if(illVal >= 100){
+        illuminanceState = 1;                
+      }else{
+        illuminanceState = 0;
+      }
 
+     if (oldIlluminanceState != illuminanceState) {
+      oldIlluminanceState = illuminanceState;
+
+      if (illuminanceState) {
+        Serial.println("ill > 100");
+        ledCharacteristic.writeValue((byte)0x01);
+      } else {
+        Serial.println("ill < 100");
+        ledCharacteristic.writeValue((byte)0x00);
+      }
+     }
+    
+  }
+\end{lstlisting}
 \end{document}
