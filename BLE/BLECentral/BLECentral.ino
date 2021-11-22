@@ -16,8 +16,11 @@
 
 #include <ArduinoBLE.h>
 
+#define LOCAL_NAME_PERIPHERAL IOTS_BLE_Peripheral_JoSi
+
 int illuminanceState = 0;
 int oldIlluminanceState = 0;
+
 void setup() {
   Serial.begin(9600);
   while (!Serial);
@@ -50,7 +53,7 @@ void loop() {
     Serial.println();
 
     // see if peripheral is a LED
-    if (peripheral.localName() == "IOTS_BLE_Peripheral_JoSi") {  //Local Name hoes here
+    if (peripheral.localName() == LOCAL_NAME_PERIPHERAL) {  
       // stop scanning
       BLE.stopScan();
 
@@ -168,7 +171,6 @@ void explorerPeripheral(BLEDevice peripheral) {
       }
 
      if (oldIlluminanceState != illuminanceState) {
-      // button changed
       oldIlluminanceState = illuminanceState;
 
       if (illuminanceState) {
@@ -179,11 +181,11 @@ void explorerPeripheral(BLEDevice peripheral) {
         ledCharacteristic.writeValue((byte)0x00);
       }
      }
-    delay(100);
     
   }
   }
 }
+
 
 
 
